@@ -153,7 +153,8 @@
                         
                         <!-- Areas will be populated based on the selected city -->
                     </select>
-        
+                    
+                    <br><br>
                     <button onclick="filterServices()" style="background-color: lightblue; border: none; border-radius: 10%; padding: 10px 20px 10px 10px; cursor: pointer;">Find Services</button>
                 </div>
         
@@ -164,6 +165,9 @@
             
           </div>
         </div>
+      </section>
+      <section class="slider_section ">
+        <div class="container"><div id="service-list"></div></div>
       </section>
      
     </div>
@@ -262,6 +266,7 @@ function displayServices(services) {
         const serviceCard = document.createElement("div");
         serviceCard.classList.add("container");
         serviceCard.innerHTML = `
+        <br><br>
             <h3>${service.name}</h3>
             <p>${service.description}</p>
             <p>Location: ${service.city}, ${service.area}</p>
