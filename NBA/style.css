@@ -29,8 +29,11 @@ body {
   position: relative;
   font-family: serif;
   }
+h2,h3{
+    align-items: center;
+}
 
-  .navbar,h2,h3 {
+  .navbar {
     
     background: #333;
     padding: 10px;
