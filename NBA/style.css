@@ -30,7 +30,7 @@ body {
   font-family: serif;
   }
 
-  .navbar {
+  .navbar,h2,h3 {
     
     background: #333;
     padding: 10px;
