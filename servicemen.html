@@ -176,7 +176,7 @@
         <div class="container">
           <p>
             &copy; <span id="displayDateYear"></span> All Rights Reserved By
-            <a href="https://html.design/">Thozhilai 2025</a>
+            <a href="https://html.design/">Thozhilai</a>
           </p>
         </div>
       </footer>
@@ -194,11 +194,11 @@
       <!-- End Google Map -->
        <!--Script for Service men-->
        <script>
-         let services = [];
-        let citiesAndAreas = {}; // To hold the cities and areas data
+        let services = [];
+let citiesAndAreas = {}; // To hold the cities and areas data
 
-  // Fetch cities and areas data from the JSON file
-  fetch('https://raw.githubusercontent.com/thozhilali/thozhilali/main/citiesAndAreas.json')
+// Fetch cities and areas data from the JSON file
+fetch('https://raw.githubusercontent.com/thozhilali/thozhilali/main/citiesAndAreas.json')
     .then(response => response.json())
     .then(data => {
         citiesAndAreas = data; // Store the fetched data in citiesAndAreas
@@ -207,8 +207,8 @@
         console.error('Error fetching cities and areas:', error);
     });
 
-  // Fetch services data from the JSON file
-  fetch('https://raw.githubusercontent.com/thozhilali/thozhilali/main/services.json')
+// Fetch services data from the JSON file
+fetch('https://raw.githubusercontent.com/thozhilali/thozhilali/main/services.json')
     .then(response => response.json())
     .then(data => {
         services = data; // Store the fetched data in the services array
@@ -217,8 +217,8 @@
         console.error('Error fetching services:', error);
     });
 
-  // Function to update the area dropdown based on the selected city
-  function updateAreas() {
+// Function to update the area dropdown based on the selected city
+function updateAreas() {
     const city = document.getElementById("city").value;
     const areaDropdown = document.getElementById("area");
 
@@ -266,7 +266,7 @@ function displayServices(services) {
         const serviceCard = document.createElement("div");
         serviceCard.classList.add("container");
         serviceCard.innerHTML = `
-        <br><br>
+            <br><br>
             <h3>${service.name}</h3>
             <p>${service.description}</p>
             <p>Location: ${service.city}, ${service.area}</p>
@@ -274,8 +274,7 @@ function displayServices(services) {
         `;
         serviceList.appendChild(serviceCard);
     });
-
-        
+}
        </script>
        <!--Script for Service men ends here-->
     
