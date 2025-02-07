@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thozhilali Affliate Marketing Team</title>
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+    <div class="container">
+         <!-- Replace with your actual logo image URL -->
+        <h1>Thozhilali Amazon Affiliate Associates</h1>
+        <h2>Only for Students in College!</h2>
+        <h3>Eligibility Criteria:</h3>
+        <p>Basics of HTML <br> Marketing Skills</p>
+        <h4>Based on your performance and user interaction, you will be paid.</h4>
+        
+        <form id="orderForm">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+            
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+            
+            <label for="gender">Gender:</label>
+            <select name="gender" id="gender">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+            
+            <label for="interest">Interest:</label>
+            <select name="interest" id="interest">
+                <option value="Beauty Products">Beauty Products</option>
+                <option value="Tech Gadgets">Tech Gadgets</option>
+                <option value="Clothing Men's Wear">Men's Wear</option>
+                <option value="Clothing Womens Wear">Women's Wear</option>
+                <option value="Jewellery">Jewellery</option>
+            </select>
+            
+            <button type="button" onclick="sendToWhatsApp()">Send</button>
+        </form>
+        <p>Certificates will be issued once we select you!</p>
+    </div>
+
+    <script>
+        function sendToWhatsApp() {
+            var name = document.getElementById("name").value.trim();
+            var gender = document.getElementById("gender").value.trim();
+            var interest = document.getElementById("interest").value.trim();
+            var email = document.getElementById("email").value.trim();
+
+            if (name === "" || email === "" || interest === "") {
+                alert("Please fill out all fields.");
+                return;
+            }
+
+            var message = `Hello, I'm interested in joining:
+👤 Name: ${name}
+📧 Email: ${email}
+🔹 Gender: ${gender}
+🔢 Interest: ${interest}`;
+            var encodedMessage = encodeURIComponent(message);
+
+            var phoneNumber = "919419339434";  // No '+' sign before the number
+            var whatsappLink = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+            
+            window.location.href = whatsappLink; // Redirects the user to WhatsApp
+        }
+    </script>
+</body>
+</html>
