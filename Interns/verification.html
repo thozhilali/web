@@ -1,1 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intern Verification Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #007BFF;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Intern Verification Portal</h2>
+        <input type="text" id="internId" placeholder="Enter Intern ID">
+        <button onclick="verifyIntern()">Verify</button>
+        <div class="result" id="result"></div>
+        <h3>All the Interns have been selected based on their interest and willingness to learn. This is a student uplifting platform. We don’t charge anything for this; we teach and train them for free!</h3>
+    </div>
+    
+    <script>
+        let interns = {}; // Use let instead of const
+
+        // Fetch intern data
+        fetch('./interns.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to load interns data");
+                }
+                return response.json();
+            })
+            .then(data => {
+                interns = data; // Store the fetched data
+            })
+            .catch(error => {
+                console.error('Error fetching interns data:', error);
+            });
+
+        function verifyIntern() {
+            const internId = document.getElementById("internId").value.trim();
+            const resultDiv = document.getElementById("result");
+            
+            if (Object.keys(interns).length === 0) {
+                resultDiv.innerHTML = "<p style='color: red;'>Data is still loading. Please try again later.</p>";
+                return;
+            }
+
+            if (interns[internId]) {
+                const { name, joiningDate, completionDate } = interns[internId];
+                resultDiv.innerHTML = `<p>Intern: ${name}</p>
+                                       <p>Date of Joining: ${joiningDate}</p>
+                                       <p>Certificate Completion Date: ${completionDate}</p>`;
+            } else {
+                resultDiv.innerHTML = "<p style='color: red;'>Invalid Intern ID</p>";
+            }
+        }
+    </script>
+</body>
+</html>
 
