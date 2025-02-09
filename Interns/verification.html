@@ -90,9 +90,10 @@
             }
 
             if (interns[internId]) {
-                const { name, joiningDate } = interns[internId];
+                const { name, joiningDate, info } = interns[internId];
                 resultDiv.innerHTML = `<p>Intern: ${name}</p>
-                                       <p>Date of Joining: ${joiningDate}</p>`;
+                                       <p>Date of Joining: ${joiningDate}</p>
+                                       <p>Education Details:${info} </p>`;
             } else {
                 resultDiv.innerHTML = "<p style='color: red;'>Invalid Intern ID</p>";
             }
