@@ -1,4 +1,4 @@
 {"INT1001": { "name": "Alice Johnson", "joiningDate": "2024-06-01", "completionDate": "2024-12-01" },
 "INT1002": { "name": "Bob Smith", "joiningDate": "2024-07-15", "completionDate": "2025-01-15" },
 "INT1003": { "name": "Charlie Brown", "joiningDate": "2024-08-10", "completionDate": "2025-02-10" }
-}
+};
