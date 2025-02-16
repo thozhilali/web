@@ -1,291 +1,40 @@
 body {
     font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    height: 100vh;
     margin: 0;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    transition: background-color 0.3s, color 0.3s;
-    font-family: serif;
-  }
- label {
-  display: inline-block; /* Ensures proper padding & shape */
-  background: #f1f1f1; /* Light background */
-  padding: 8px 15px; /* Adjust padding for better shape */
-  border-radius: 20px; /* Rounds the edges */
-  font-size: 16px;
-  font-weight: bold; 
-  font-family: serif; 
-  }
-  select {
-  appearance: none; /* Removes default arrow */
-  background: #f1f1f1;
-  padding: 10px 15px;
-  border-radius: 5px; /* Makes the select box rounded */
-  border: 1px solid #ccc;
-  font-size: 16px;
-  cursor: pointer;
-  outline: none;
-  width: 100%;
-  position: relative;
-  font-family: serif;
-  }
-h2,h3{
-    align-items: center;
+    background-color: #f4f4f4;
 }
-
-  .navbar {
-    
-    background: #333;
-    padding: 10px;
-    text-align: center;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-radius: 15px; /* Adjust for more/less rounding */
-    margin: 10px; /* Adds spacing around the navbar */
-  }
-  .navbar a {
-    
-    color: white;
-    padding: 10px 15px;
-    text-decoration: none;
-    display: inline-block;
-  }
-  .navbar a:hover {
-    
-    background: #555;
-  }
-
-  .menu-icon {
-    display: none;
-    font-size: 30px;
-    color: white;
-    cursor: pointer;
-    padding: 10px;
-  }
-
-  .navbar-links {
-    
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    border-radius: 15px;
-
-  }
-
-  .navbar-links a {
-    
-    display: block;
-  }
-
-  .card-container {
-    border: 1px solid #ddd;
-    padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 5px;
-    text-align: center;
-  }
-  .card-title {
-    font-size: 20px;
-    font-weight: bold;
-  }
-  .card-content {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-  }
-  #navbar-iframe {
-    display: none !important;
-  }
-
-  /* Footer Styles */
-  .footer {
-    text-align: center;
-    padding: 10px;
-    margin-top: auto;
-    transition: background-color 0.3s, color 0.3s;
-  }
-
-  /* Dark Mode Styles */
-  body.dark-mode {
-    background-color: black;
-    color: white;
-  }
-  .navbar.dark-mode {
-    background-color: black;
-  }
-  .card-container.dark-mode {
-    background-color: black;
-    color: white;
-    border: 1px solid black;
-  }
-  .footer.dark-mode {
-    background-color: #222;
-    color: white;
-  }
-  .service-card.dark-mode {
-    background-color: #ffecd2!important;
+.container {
+    background: white;
     padding: 20px;
     border-radius: 10px;
-    width: 200px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    text-align: center;
-  }
-  label.dark-mode {
-  display: inline-block; /* Ensures proper padding & shape */
-  background: black; /* Light background */
-  padding: 8px 15px; /* Adjust padding for better shape */
-  border-radius: 20px; /* Rounds the edges */
-  font-size: 16px;
-  font-weight: bold;  
-
-  }
-
-  /* Toggle Button Styles */
-  .toggle-btn {
-    position: fixed;
-    top: 15px;
-    right: 5px;
-    background-color: transparent;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    z-index: 1000;
-  }
-  
-  .service-filter {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 400px;
+}
+img {
+    width: 100px;
+    height: auto;
     margin-bottom: 20px;
-  }
-
-  label {
-    font-size: 16px;
-  }
-
-  input, select {
+}
+input, select, button {
+    width: 100%;
     padding: 10px;
-    font-size: 16px;
-    width: 200px;
-    margin-bottom: 10px;
-  }
-
-  button {
-    padding: 10px 20px;
-    background-color: #3b82f6;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+button {
+    background-color: green;
     color: white;
     border: none;
     cursor: pointer;
-    border-radius: 5px;
-  }
-
-  button:hover {
-    background-color: #2563eb;
-  }
-
-  #service-list {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-  }
-
-  .service-card {
-    background-color: #ffecd2;
-    padding: 20px;
-    border-radius: 10px;
-    width: 200px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    text-align: center;
-  }
-
-  .service-card h3 {
-    font-size: 18px;
-    color: #3b82f6;
-  }
-
-  .service-card p {
-    font-size: 14px;
-    color: #3b82f6;
-  }
-
-  .phone-link {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: bold;
-  }
-
-  .phone-link:hover {
-    text-decoration: underline;
-  }
-
-  /* Sidebar Styles */
-  .sidebar {
-    position: fixed;
-    top: 0;
-    left: -250px;
-    width: 250px;
-    height: 100%;
-    background-color: #333;
-    overflow-y: auto;
-    transition: left 0.3s;
-    z-index: 999;
-    padding-top: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .sidebar a {
-    color: white;
-    padding: 10px;
-    text-decoration: none;
-    width: 100%;
-    text-align: left;
-    border-bottom: 1px solid #444;
-  }
-
-  .sidebar a:hover {
-    background-color: #555;
-  }
-
-  .sidebar.active {
-    left: 0;
-  }
-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            margin-top: 20px;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: center;
-        }
-        th {
-            background-color: #007bff;
-            color: white;
-        }
-        tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-
-  /* Media Query for Mobile View */
-  @media (max-width: 768px) {
-    .navbar-links {
-      display: none;
-    }
-
-    .menu-icon {
-      display: block;
-    }
-    .toggle-btn{
-      top: 22px;
-    right: 15px;
-
-    }
-  }
+}
+button:hover {
+    background-color: darkgreen;
+}
