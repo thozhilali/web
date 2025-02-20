@@ -3,37 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WhatsApp Document Sender</title>
+    <title>Send Email with Attachment</title>
 </head>
 <body>
+    <h2>Select a File and Send via Gmail</h2>
 
-    <h2>Select a Document</h2>
-    <input type="file" id="fileInput" accept="application/pdf,image/*">
-    <p id="fileName"></p>
-
-    <button id="sendButton" disabled>Send via WhatsApp</button>
+    <input type="file" id="fileInput" accept="image/*,application/pdf">
+    <button id="sendEmail">Send Email</button>
 
     <script>
-        let selectedFile = null;
-        const whatsappNumber = "9419339434"; // Predefined WhatsApp number
+        document.getElementById("sendEmail").addEventListener("click", async function () {
+            let fileInput = document.getElementById("fileInput");
+            let file = fileInput.files[0];
 
-        document.getElementById("fileInput").addEventListener("change", function(event) {
-            selectedFile = event.target.files[0];
-            document.getElementById("fileName").innerText = selectedFile ? "File Selected: " + selectedFile.name : "";
-            document.getElementById("sendButton").disabled = !selectedFile;
-        });
+            if (!file) {
+                alert("Please select a file!");
+                return;
+            }
 
-        document.getElementById("sendButton").addEventListener("click", function() {
-            if (selectedFile) {
-                alert("WhatsApp does not allow automatic file attachments. You will need to manually attach the file after WhatsApp opens.");
-                
-                let whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent("Please find the attached document.")}`;
-                window.open(whatsappURL, "_blank");
+            let recipient = "your-email@example.com"; // Change this
+            let subject = encodeURIComponent("Attached File");
+            let body = encodeURIComponent("Please find the attached file.");
+
+            // Create a Blob URL
+            let fileURL = URL.createObjectURL(file);
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: "Send Email",
+                        text: `Subject: ${subject}\n\n${body}`,
+                        url: fileURL // Pass the file URL
+                    });
+                } catch (error) {
+                    console.log("Error sharing:", error);
+                }
             } else {
-                alert("Please select a file first!");
+                alert("Sharing is not supported on this device.");
             }
         });
     </script>
-
 </body>
 </html>
