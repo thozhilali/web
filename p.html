@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp File Sender</title>
+</head>
+<body>
+
+    <h2>Select a File</h2>
+    <input type="file" id="fileInput" accept="image/*,application/pdf">
+    <p id="fileName"></p>
+
+    <button id="sendButton" disabled>Send via WhatsApp</button>
+
+    <script>
+        let selectedFile = null;
+        const whatsappNumber = "9419339434"; // Predefined WhatsApp number
+
+        // Handle File Selection
+        document.getElementById("fileInput").addEventListener("change", function(event) {
+            selectedFile = event.target.files[0];
+            document.getElementById("fileName").innerText = selectedFile ? "File: " + selectedFile.name : "";
+            document.getElementById("sendButton").disabled = !selectedFile;
+        });
+
+        // Send File via WhatsApp
+        document.getElementById("sendButton").addEventListener("click", function() {
+            if (selectedFile) {
+                let fileURL = URL.createObjectURL(selectedFile); // Temporary URL
+                let message = `Here is your file: ${fileURL}`;
+                let whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+                window.open(whatsappURL, "_blank");
+            } else {
+                alert("Please select a file first!");
+            }
+        });
+    </script>
+
+</body>
+</html>
