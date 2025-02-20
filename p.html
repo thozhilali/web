@@ -8,39 +8,27 @@
 <body>
     <h2>Select a File and Send via Gmail</h2>
 
-    <input type="file" id="fileInput" accept="image/*,application/pdf">
-    <button id="sendEmail">Send Email</button>
+    <form id="emailForm">
+        <input type="email" id="recipient" placeholder="Recipient Email" required><br><br>
+        <input type="file" id="fileInput" accept="image/*,application/pdf" required><br><br>
+        <button type="button" id="sendEmail">Send via Gmail</button>
+    </form>
 
     <script>
-        document.getElementById("sendEmail").addEventListener("click", async function () {
-            let fileInput = document.getElementById("fileInput");
-            let file = fileInput.files[0];
+        document.getElementById("sendEmail").addEventListener("click", function () {
+            let recipient = document.getElementById("recipient").value;
+            let file = document.getElementById("fileInput").files[0];
 
-            if (!file) {
-                alert("Please select a file!");
+            if (!recipient || !file) {
+                alert("Please enter an email and select a file!");
                 return;
             }
 
-            let recipient = "your-email@example.com"; // Change this
-            let subject = encodeURIComponent("Attached File");
-            let body = encodeURIComponent("Please find the attached file.");
-
-            // Create a Blob URL
+            // Create a temporary URL for the file
             let fileURL = URL.createObjectURL(file);
 
-            if (navigator.share) {
-                try {
-                    await navigator.share({
-                        title: "Send Email",
-                        text: `Subject: ${subject}\n\n${body}`,
-                        url: fileURL // Pass the file URL
-                    });
-                } catch (error) {
-                    console.log("Error sharing:", error);
-                }
-            } else {
-                alert("Sharing is not supported on this device.");
-            }
+            // Open Gmail with attachment
+            window.location.href = `mailto:${recipient}?subject=Attached Document&body=Please find the attached file.&attachment=${fileURL}`;
         });
     </script>
 </body>
