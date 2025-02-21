@@ -104,6 +104,11 @@
                     <option value="Thiruvallvur">Thiruvallvur</option>
                     <option value="Chennai">Chennai</option>
                 </select>
+                 <label for="services">Services</label>
+                <select name="services" id="services" required>
+                    <option value="CCTV Installation">CCTV Installation</option>
+                    <option value="Networking Product Enquiry">Networking Products</option>
+                </select>
                 
                 <button type="button" onclick="sendToWhatsApp()">Send</button>
             </form>
@@ -121,13 +126,14 @@
             var name = document.getElementById("name").value.trim();
             var address = document.getElementById("address").value.trim();
             var district = document.getElementById("district").value.trim();
+            var services = document.getElementById("services").value.trim();
 
-            if (name === "" || district === "" || address === "") {
+            if (name === "" || district === "" || address === "" || services==="") {
                 alert("Please fill out all fields.");
                 return;
             }
 
-            var message = `Hello, I'm interested in joining:\n👤 Name: ${name}\n📍 District: ${district}\n🏠 Address: ${address}`;
+            var message = `Hello, Need to enquire about your services:\n👤 Name: ${name}\n📍 District: ${district}\n🏠 Address: ${address} Service: ${services}`;
             var encodedMessage = encodeURIComponent(message);
 
             var phoneNumber = "919791086599";  // No '+' sign before the number
