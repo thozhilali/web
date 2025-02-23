@@ -2,34 +2,96 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Send Email with Attachment</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>VR AI Object Detection</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <style>
+        * { margin: 0; padding: 0; overflow: hidden; box-sizing: border-box; }
+        body { background: black; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; }
+        
+        .vr-container { 
+            display: flex; 
+            flex-direction: column;  
+            width: 100vw; 
+            height: 100vh;
+            position: relative;
+        }
+        
+        video { 
+            width: 100vw;  
+            height: 50vh;  
+            object-fit: cover;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+        }
+    </style>
 </head>
 <body>
-    <h2>Select a File and Send via Gmail</h2>
-
-    <form id="emailForm">
-        <input type="email" id="recipient" placeholder="Recipient Email" required><br><br>
-        <input type="file" id="fileInput" accept="image/*,application/pdf" required><br><br>
-        <button type="button" id="sendEmail">Send via Gmail</button>
-    </form>
+    <div class="vr-container">
+        <video id="video-left" autoplay playsinline></video>
+        <video id="video-right" autoplay playsinline></video>
+        <canvas id="canvas"></canvas>
+    </div>
 
     <script>
-        document.getElementById("sendEmail").addEventListener("click", function () {
-            let recipient = document.getElementById("recipient").value;
-            let file = document.getElementById("fileInput").files[0];
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment" }
+                });
 
-            if (!recipient || !file) {
-                alert("Please enter an email and select a file!");
-                return;
+                document.getElementById('video-left').srcObject = stream;
+                document.getElementById('video-right').srcObject = stream;
+
+                startObjectDetection();
+            } catch (error) {
+                console.error("Camera access error:", error);
+            }
+        }
+
+        async function startObjectDetection() {
+            const video = document.getElementById('video-left'); // Use left video for detection
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Load COCO-SSD model
+            const model = await cocoSsd.load();
+            console.log("AI Model Loaded");
+
+            function detectObjects() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                model.detect(video).then(predictions => {
+                    predictions.forEach(prediction => {
+                        const { bbox, class: objectName, score } = prediction;
+                        const [x, y, width, height] = bbox;
+
+                        ctx.strokeStyle = "red";
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(x, y, width, height);
+
+                        ctx.fillStyle = "red";
+                        ctx.font = "18px Arial";
+                        ctx.fillText(`${objectName} (${(score * 100).toFixed(1)}%)`, x, y - 10);
+                    });
+                });
+
+                requestAnimationFrame(detectObjects);
             }
 
-            // Create a temporary URL for the file
-            let fileURL = URL.createObjectURL(file);
+            detectObjects();
+        }
 
-            // Open Gmail with attachment
-            window.location.href = `mailto:${recipient}?subject=Attached Document&body=Please find the attached file.&attachment=${fileURL}`;
-        });
+        startCamera();
     </script>
 </body>
 </html>
