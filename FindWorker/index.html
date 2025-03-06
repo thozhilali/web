@@ -59,12 +59,13 @@
                 if ((areaFilter === "All" || worker.area === areaFilter) &&
                     (jobFilter === "All" || worker.job === jobFilter)) {
                     
-                        const workerCard = `<div class="card">
+                        const workerCard = `<br><div class="card">
                             <h3>${worker.name}</h3>
                             <p><strong>Job:</strong> ${worker.job}</p>
                             <p><strong>Area:</strong> ${worker.area}</p>
                             <p><strong>Send Location:</strong> 
                             <button onclick="sendLocation('${worker.name}', '${worker.area}')">Send Location</button></p>
+                            <br>
                             </div>`;
                     workerList.innerHTML += workerCard;
                 }
@@ -210,6 +211,7 @@
         <option value="Thiruvallur">Thiruvallur</option>
         <option value="Avadi">Avadi</option>
     </select>
+    <br>
 
     <select id="jobFilter" onchange="loadWorkers()">
         <option value="All">All Jobs</option>
