@@ -1,208 +1,92 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <!-- Basic -->
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!-- Mobile Metas -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Site Metas -->
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8615185609653849"
-     crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Workers</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
 
-  <title>Thozhilali</title>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCOckXXSfB5SWzgoOsFjuGvZ2yF6RMA9g0",
+            authDomain: "thozhilaliadmin.firebaseapp.com",
+            databaseURL: "https://thozhilaliadmin-default-rtdb.firebaseio.com",
+            projectId: "thozhilaliadmin",
+            storageBucket: "thozhilaliadmin.firebasestorage.app",
+            messagingSenderId: "3832462237",
+            appId: "1:3832462237:web:db465ab3bdc499dd208d74",
+            measurementId: "G-V6PDDPQD91"
+        };
 
-  <!-- slider stylesheet -->
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
-  <!-- bootstrap core css -->
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-  <!-- font awesome style -->
-  <link rel="stylesheet" type="text/css" href="css/font-awesome.min.css" />
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
 
-  <!-- Custom styles for this template -->
-  <link href="css/style.css" rel="stylesheet" />
-  <!-- responsive style -->
-  
-  <link rel="stylesheet" href="styles.css">
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+        function loadWorkers() {
+            const workerList = document.getElementById("workerList");
+            const areaFilter = document.getElementById("areaFilter").value;
+            const jobFilter = document.getElementById("jobFilter").value;
+            const workersRef = ref(database, "workers");
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyCOckXXSfB5SWzgoOsFjuGvZ2yF6RMA9g0",
-        authDomain: "thozhilaliadmin.firebaseapp.com",
-        databaseURL: "https://thozhilaliadmin-default-rtdb.firebaseio.com",
-        projectId: "thozhilaliadmin",
-        storageBucket: "thozhilaliadmin.firebasestorage.app",
-        messagingSenderId: "3832462237",
-        appId: "1:3832462237:web:db465ab3bdc499dd208d74",
-        measurementId: "G-V6PDDPQD91"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-
-    function loadWorkers() {
-        const workerList = document.getElementById("workerList");
-        const areaFilter = document.getElementById("areaFilter").value;
-        const jobFilter = document.getElementById("jobFilter").value;
-        const workersRef = ref(database, "workers");
-
-        onValue(workersRef, (snapshot) => {
-            workerList.innerHTML = "";
-            snapshot.forEach((childSnapshot) => {
-                const worker = childSnapshot.val();
-                if ((areaFilter === "All" || worker.area === areaFilter) &&
-                    (jobFilter === "All" || worker.job === jobFilter)) {
-                    
-                        const workerCard = `<div class="card">
-                            <h3>${worker.name}</h3>
-                            <p><strong>Job:</strong> ${worker.job}</p>
-                            <p><strong>Area:</strong> ${worker.area}</p>
-                            <p><strong>Send Location:</strong> 
-                            <button onclick="sendLocation('${worker.name}', '${worker.area}')">Send Location</button></p>
-                            </div>`;
-                    workerList.innerHTML += workerCard;
-                }
+            onValue(workersRef, (snapshot) => {
+                workerList.innerHTML = "";
+                snapshot.forEach((childSnapshot) => {
+                    const worker = childSnapshot.val();
+                    if ((areaFilter === "All" || worker.area === areaFilter) &&
+                        (jobFilter === "All" || worker.job === jobFilter)) {
+                        
+                            const workerCard = `<div class="cardfw">
+                                <h3>${worker.name}</h3>
+                                <p><strong>Job:</strong> ${worker.job}</p>
+                                <p><strong>Area:</strong> ${worker.area}</p>
+                                <p><strong>Send Location:</strong> 
+                                <button onclick="sendLocation('${worker.name}', '${worker.area}')">Send Location</button></p>
+                                </div>`;
+                        workerList.innerHTML += workerCard;
+                    }
+                });
             });
-        });
+        }
+
+        //Location Tracking 
+        function sendLocation(workerName, workerArea) {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(position => {
+                let latitude = position.coords.latitude;
+                let longitude = position.coords.longitude;
+
+                // Google Maps location link
+                let locationLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+                // WhatsApp phone number (replace with actual number)
+                let phoneNumber = "919419339434"; // Replace with actual recipient's number
+
+                // WhatsApp message including worker details and sender's location
+                let message = `Hello, I need a worker. Here are the details:\n\n` +
+                              `🔹 Worker: ${workerName}\n` +
+                              `📍 Area: ${workerArea}\n\n` +
+                              `Here is my current location:\n${locationLink}`;
+
+                // WhatsApp link with encoded message
+                let whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+                // Redirect to WhatsApp
+                window.location.href = whatsappLink;
+            }, error => {
+                alert("Error getting location. Make sure location services are enabled.");
+            });
+        } else {
+            alert("Geolocation is not supported by your browser.");
+        }
     }
+    window.sendLocation = sendLocation;
 
-    //Location Tracking 
-    function sendLocation(workerName, workerArea) {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-            let latitude = position.coords.latitude;
-            let longitude = position.coords.longitude;
-
-            // Google Maps location link
-            let locationLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
-
-            // WhatsApp phone number (replace with actual number)
-            let phoneNumber = "919419339434"; // Replace with actual recipient's number
-
-            // WhatsApp message including worker details and sender's location
-            let message = `Hello, I need a worker. Here are the details:\n\n` +
-                          `🔹 Worker: ${workerName}\n` +
-                          `📍 Area: ${workerArea}\n\n` +
-                          `Here is my current location:\n${locationLink}`;
-
-            // WhatsApp link with encoded message
-            let whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-
-            // Redirect to WhatsApp
-            window.location.href = whatsappLink;
-        }, error => {
-            alert("Error getting location. Make sure location services are enabled.");
-        });
-    } else {
-        alert("Geolocation is not supported by your browser.");
-    }
-}
-
-    window.loadWorkers = loadWorkers;
-</script>
-  <style>
-    label {
-          display: inline-block; /* Ensures proper padding & shape */
-          background: #f1f1f1; /* Light background */
-          padding: 8px 15px; /* Adjust padding for better shape */
-          border-radius: 20px; /* Rounds the edges */
-          font-size: 16px;
-          font-weight: bold; 
-          font-family: serif; 
-          }
-          select {
-          appearance: none; /* Removes default arrow */
-          background: #f1f1f1;
-          padding: 10px 15px;
-          border-radius: 5px; /* Makes the select box rounded */
-          border: 1px solid #ccc;
-          font-size: 16px;
-          cursor: pointer;
-          outline: none;
-          width: 100%;
-          position: relative;
-          font-family: serif;
-          }
-
-    
-
-  </style>
-
+        window.loadWorkers = loadWorkers;
+    </script>
 </head>
-
 <body>
-  <div class="hero_area">
-    <!-- header section strats -->
-    <header class="header_section">
-      <div class="header_top">
-        <div class="container-fluid">
-          <div class="contact_nav">
-            <a href="tel:+919419339434">
-              <i class="fa fa-phone" aria-hidden="true"></i>
-              <span>
-                 Call
-              </span>
-            </a>
-            <a href="">
-              <i class="fa fa-envelope" aria-hidden="true"></i>
-              <span>
-                Email
-              </span>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="header_bottom">
-        <div class="container-fluid">
-          <nav class="navbar navbar-expand-lg custom_nav-container ">
-            <a class="navbar-brand" href="index.html">
-              <span>
-                Thozhilali
-              </span>
-            </a>
-
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-              <span class=""> </span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <ul class="navbar-nav ">
-                <li class="nav-item ">
-                  <a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="about.html"> About</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="service.html">Services</a>
-                </li>
-                <li class="nav-item active">
-                  <a class="nav-link" href="contact.html">Contact Us</a>
-                </li>
-              </ul>
-            </div>
-          </nav>
-        </div>
-      </div>
-    </header>
-    <section class="slider_section ">
-        <div class="container ">
-          <div class="row">
-            <div class="col-md-6 ">
-              <div class="detail-box">
-                <h1>
-                Find a Worker
-                </h1>
-                <!---->
-                <div class="service-filter">
-
-                    
+    <h2>Find a Worker</h2>
     <select id="areaFilter" onchange="loadWorkers()">
         <option value="All">Select Area</option>
         <option value="Chennai">Chennai</option>
@@ -219,130 +103,7 @@
     </select>
 
     <div id="workerList" class="worker-container"></div>
-
-                </div>
-        
-                <div id="service-list"></div>
-                
-              </div>
-            </div>
-            
-          </div>
-        </div>
-      </section>
-      <section class="slider_section ">
-        <div class="container"><div id="service-list"></div></div>
-      </section>
-     
-    </div>
-
-    <footer class="footer_section">
-        <div class="container">
-          <p>
-            &copy; <span id="displayDateYear"></span> All Rights Reserved By
-            <a href="https://html.design/">Thozhilai</a>
-          </p>
-        </div>
-      </footer>
-      <!-- footer section -->
     
-      <script src="js/jquery-3.4.1.min.js"></script>
-      <script src="js/bootstrap.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js">
-      </script>
-      <script src="js/custom.js"></script>
-      <!-- Google Map -->
-       <!--
-      <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCh39n5U-4IoWpsVGUHWdqB6puEkhRLdmI&callback=myMap"></script>
-      -->
-      <!-- End Google Map -->
-       <!--Script for Service men-->
-       <script>
-        let services = [];
-let citiesAndAreas = {}; // To hold the cities and areas data
+</body>
+</html>
 
-// Fetch cities and areas data from the JSON file
-fetch('https://raw.githubusercontent.com/thozhilali/thozhilali/main/citiesAndAreas.json')
-    .then(response => response.json())
-    .then(data => {
-        citiesAndAreas = data; // Store the fetched data in citiesAndAreas
-    })
-    .catch(error => {
-        console.error('Error fetching cities and areas:', error);
-    });
-
-// Fetch services data from the JSON file
-fetch('https://raw.githubusercontent.com/thozhilali/thozhilali/main/services.json')
-    .then(response => response.json())
-    .then(data => {
-        services = data; // Store the fetched data in the services array
-    })
-    .catch(error => {
-        console.error('Error fetching services:', error);
-    });
-
-// Function to update the area dropdown based on the selected city
-function updateAreas() {
-    const city = document.getElementById("city").value;
-    const areaDropdown = document.getElementById("area");
-
-    // Clear existing areas
-    areaDropdown.innerHTML = "<option value=''>Select Area</option>";
-
-    // Get the areas for the selected city
-    if (city && citiesAndAreas[city]) {
-        citiesAndAreas[city].forEach(area => {
-            const option = document.createElement("option");
-            option.value = area;
-            option.textContent = area;
-            areaDropdown.appendChild(option);
-        });
-    }
-}
-
-// Function to filter and display services based on selected service type, city, and area
-function filterServices() {
-    const serviceType = document.getElementById("service").value;
-    const city = document.getElementById("city").value.trim().toLowerCase();
-    const area = document.getElementById("area").value.trim().toLowerCase();
-
-    const filteredServices = services.filter(service => 
-        service.name.toLowerCase().includes(serviceType) &&
-        service.city.toLowerCase().includes(city) &&
-        service.area.toLowerCase().includes(area)
-    );
-
-    displayServices(filteredServices);
-}
-
-// Function to display the filtered services
-function displayServices(services) {
-    const serviceList = document.getElementById("service-list");
-    serviceList.innerHTML = ""; // Clear previous results
-
-    if (services.length === 0) {
-        serviceList.innerHTML = "<p>No services found in your location.</p>";
-        return;
-    }
-
-    services.forEach(service => {
-        const phoneLink = `<a href="tel:${service.phone}" class="phone-link">Call: ${service.phone}</a>`;
-        const serviceCard = document.createElement("div");
-        serviceCard.classList.add("container");
-        serviceCard.innerHTML = `
-            <br><br>
-            <h3>${service.name}</h3>
-            <p>${service.description}</p>
-            <p>Location: ${service.city}, ${service.area}</p>
-            <p>${phoneLink}</p>
-        `;
-        serviceList.appendChild(serviceCard);
-    });
-}
-       </script>
-       <!--Script for Service men ends here-->
-    
-    
-    </body>
-    
-    </html>
