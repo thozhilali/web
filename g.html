@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Location via WhatsApp</title>
+</head>
+<body>
+    <button onclick="sendLocation()">Send Location</button>
+
+    <script>
+        function sendLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(position => {
+                    let latitude = position.coords.latitude;
+                    let longitude = position.coords.longitude;
+
+                    // Google Maps link
+                    let locationLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+                    // WhatsApp phone number (replace with actual number)
+                    let phoneNumber = "919419339434"; // Change to recipient's number (91 for India, replace XXXXXXXXXX)
+
+                    // WhatsApp link with predefined message
+                    let whatsappLink = `https://wa.me/${phoneNumber}?text=My%20Location:%20${encodeURIComponent(locationLink)}`;
+
+                    // Redirect to WhatsApp
+                    window.location.href = whatsappLink;
+                }, error => {
+                    alert("Error getting location. Make sure location services are enabled.");
+                });
+            } else {
+                alert("Geolocation is not supported by your browser.");
+            }
+        }
+    </script>
+</body>
+</html>
