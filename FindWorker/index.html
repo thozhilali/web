@@ -87,74 +87,119 @@ const database = getDatabase(app);
             <div style="background: white; padding: 20px; border-radius: 8px; text-align: center;">
                 <p>Getting your precise location...</p>
                 <p>Please wait a moment</p>
+                <p id="locationProgress">Initializing...</p>
             </div>
         </div>
     `;
     document.body.appendChild(loadingDiv);
+    
+    // Update the loading message with progress
+    let progressElement = null;
+    let progressInterval = null;
+    
+    function startProgressIndicator() {
+        let dots = 0;
+        progressElement = document.getElementById('locationProgress');
+        progressInterval = setInterval(() => {
+            dots = (dots + 1) % 4;
+            progressElement.textContent = "Accessing GPS" + ".".repeat(dots);
+        }, 500);
+    }
+    
+    function clearProgress() {
+        if (progressInterval) {
+            clearInterval(progressInterval);
+        }
+    }
+    
+    startProgressIndicator();
 
     if (navigator.geolocation) {
-        // Request high accuracy location with options
+        // Increased timeout for mobile devices
         const options = {
             enableHighAccuracy: true,
-            timeout: 10000,          // 10 second timeout
-            maximumAge: 0            // Always get fresh location
+            timeout: 30000,         // 30 second timeout for mobile
+            maximumAge: 0           // Always get fresh location
         };
 
-        navigator.geolocation.getCurrentPosition(
+        const geolocationRequest = navigator.geolocation.getCurrentPosition(
             position => {
+                clearProgress();
                 // Remove loading message
-                document.body.removeChild(loadingDiv);
+                if (document.contains(loadingDiv)) {
+                    document.body.removeChild(loadingDiv);
+                }
                 
-                // Get more precise coordinates
+                // Get coordinates
                 const latitude = position.coords.latitude;
                 const longitude = position.coords.longitude;
-                const accuracy = position.coords.accuracy; // Accuracy in meters
+                const accuracy = position.coords.accuracy;
                 
-                // Google Maps location link with zoom level based on accuracy
-                const zoomLevel = accuracy < 50 ? 18 : (accuracy < 500 ? 16 : 14);
-                const locationLink = `https://www.google.com/maps?q=${latitude},${longitude}&z=${zoomLevel}`;
+                // Google Maps location link
+                const locationLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
                 
                 // WhatsApp phone number
                 const phoneNumber = "919419339434";
                 
-                // Enhanced WhatsApp message with accuracy information
+                // WhatsApp message
                 const message = `Hello, I need a worker. Here are the details:\n\n` +
                               `🔹 Worker: ${workerName}\n` +
                               `📍 Area: ${workerArea}\n\n` +
                               `Here is my current location (accurate to ~${Math.round(accuracy)}m):\n${locationLink}`;
                 
-                // WhatsApp link with encoded message
-                const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+                // Try to detect if we're on iOS (which handles deep links differently)
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
                 
-                // Redirect to WhatsApp
-                window.location.href = whatsappLink;
+                try {
+                    // WhatsApp link with encoded message
+                    const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+                    
+                    // For iOS, we'll use a slight delay before redirecting
+                    if (isIOS) {
+                        setTimeout(() => {
+                            window.location.href = whatsappLink;
+                        }, 300);
+                    } else {
+                        // For Android and others
+                        window.location.href = whatsappLink;
+                    }
+                } catch (e) {
+                    alert("Error opening WhatsApp. Please try again or copy the location manually.");
+                    console.error("WhatsApp redirect error:", e);
+                }
             },
             error => {
+                clearProgress();
                 // Remove loading message
-                document.body.removeChild(loadingDiv);
+                if (document.contains(loadingDiv)) {
+                    document.body.removeChild(loadingDiv);
+                }
                 
-                // Better error handling with specific messages
                 let errorMessage = "Error getting your location. ";
                 
                 switch(error.code) {
                     case error.PERMISSION_DENIED:
-                        errorMessage += "You denied the location permission. Please enable location access and try again.";
+                        errorMessage += "Location permission denied. On mobile, please check your browser settings and ensure location access is enabled.";
                         break;
                     case error.POSITION_UNAVAILABLE:
-                        errorMessage += "Location information is unavailable. Please check your device settings.";
+                        errorMessage += "Location unavailable. Please ensure GPS is enabled on your device.";
                         break;
                     case error.TIMEOUT:
-                        errorMessage += "Location request timed out. Please try again.";
+                        errorMessage += "Location request timed out. Please try again with better GPS signal.";
                         break;
                     default:
-                        errorMessage += "An unknown error occurred.";
+                        errorMessage += "Unknown error: " + error.message;
                 }
                 
                 alert(errorMessage);
+                console.error("Geolocation error:", error);
             },
             options
         );
     } else {
+        if (document.contains(loadingDiv)) {
+            document.body.removeChild(loadingDiv);
+        }
         alert("Geolocation is not supported by your browser. Please use a modern browser with location services.");
     }
 }
