@@ -1,0 +1,79 @@
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: white;
+            color: black;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            background-image: url('https://gifdb.com/images/high/high-tech-internet-loop-zoom-out-vx7rx0om3qnsxlip.gif');
+            background-size: cover;
+            background-position: center;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: white;
+        }
+        .cta {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: red;
+        }
+        .contact-form {
+            margin-top: 30px;
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 350px;
+            margin: auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            text-align: left;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #007BFF;
+            color: white;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .cctv-boxes {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        .cctv-box {
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .cctv-box img {
+            width: 100%;
+            border-radius: 10px;
+        }

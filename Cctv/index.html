@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCTV Installation</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Sudandram Technologies</h1>
+        <p class="cta">CCTV Installation and all Networking Products and Solutions</p>
+        
+        <div class="contact-form">
+            <h2>Contact us!</h2>
+            <form>
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+                
+                <label for="services">Services</label>
+                <select name="services" id="services" required>
+                    <option value="CCTV Installation">CCTV Installation</option>
+                    <option value="Networking Product Enquiry">Networking Products</option>
+                </select>
+                
+                <p>Share your location when you send the message to help us serve you better</p>
+                
+                <button type="button" onclick="sendLocationWithDetails()">Send</button>
+            </form>
+        </div>
+        
+        <div class="cctv-boxes">
+            <div class="cctv-box">
+                <img src="https://raw.githubusercontent.com/thozhilali/editth/refs/heads/main/IMG-20250218-WA0000.jpg" alt="CCTV Camera 1">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function sendLocationWithDetails() {
+            const name = document.getElementById("name").value.trim();
+            const services = document.getElementById("services").value.trim();
+
+            if (name === "" || services === "") {
+                alert("Please fill out all fields.");
+                return;
+            }
+
+            // Create and display loading message
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = 'locationLoadingMessage';
+            loadingDiv.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                            background: rgba(0,0,0,0.7); display: flex; justify-content: center; 
+                            align-items: center; z-index: 9999;">
+                    <div style="background: white; padding: 20px; border-radius: 8px; text-align: center;">
+                        <p>Getting your precise location...</p>
+                        <p>Please wait a moment</p>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(loadingDiv);
+            
+            if (navigator.geolocation) {
+                // Request high accuracy location with options
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 10000,          // 10 second timeout
+                    maximumAge: 0            // Always get fresh location
+                };
+                
+                navigator.geolocation.getCurrentPosition(
+                    position => {
+                        // Remove loading message
+                        document.body.removeChild(loadingDiv);
+                        
+                        // Get coordinates
+                        const latitude = position.coords.latitude;
+                        const longitude = position.coords.longitude;
+                        const accuracy = position.coords.accuracy; // Accuracy in meters
+                        
+                        // Google Maps location link with zoom level based on accuracy
+                        const zoomLevel = accuracy < 50 ? 18 : (accuracy < 500 ? 16 : 14);
+                        const locationLink = `https://www.google.com/maps?q=${latitude},${longitude}&z=${zoomLevel}`;
+                        
+                        // WhatsApp phone number
+                        const phoneNumber = "919791086599";
+                        
+                        // Enhanced WhatsApp message with name, service and location
+                        const message = `Hello, I need your services:\n\n` +
+                                      `👤 Name: ${name}\n` +
+                                      `🔹 Service: ${services}\n\n` +
+                                      `Here is my current location (accurate to ~${Math.round(accuracy)}m):\n${locationLink}`;
+                        
+                        // WhatsApp link with encoded message
+                        const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+                        
+                        // Redirect to WhatsApp
+                        window.location.href = whatsappLink;
+                    },
+                    error => {
+                        // Remove loading message
+                        document.body.removeChild(loadingDiv);
+                        
+                        // Better error handling with specific messages
+                        let errorMessage = "Error getting your location. ";
+                        
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMessage += "You denied the location permission. Please enable location access and try again.";
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMessage += "Location information is unavailable. Please check your device settings.";
+                                break;
+                            case error.TIMEOUT:
+                                errorMessage += "Location request timed out. Please try again.";
+                                break;
+                            default:
+                                errorMessage += "An unknown error occurred.";
+                        }
+                        
+                        alert(errorMessage);
+                    },
+                    options
+                );
+            } else {
+                // Remove loading message if it exists
+                if (document.getElementById('locationLoadingMessage')) {
+                    document.body.removeChild(loadingDiv);
+                }
+                alert("Geolocation is not supported by your browser. Please use a modern browser with location services.");
+            }
+        }
+    </script>
+</body>
+</html>
