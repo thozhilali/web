@@ -1,405 +1,140 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-  <!-- Basic -->
-  <meta charset="utf-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <!-- Mobile Metas -->
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <!-- Site Metas -->
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
-  <meta name="author" content="" />
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8615185609653849"
-     crossorigin="anonymous"></script>
-
-  <title>Thozhilali</title>
-
-  <!-- slider stylesheet -->
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
-  <!-- bootstrap core css -->
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css" />
-  <!-- font awesome style -->
-  <link rel="stylesheet" type="text/css" href="css/font-awesome.min.css" />
-
-  <!-- Custom styles for this template -->
-  <link href="css/style.css" rel="stylesheet" />
-  <!-- responsive style -->
-  <link href="css/responsive.css" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css">
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
-
-      // Firebase Configuration
-        const firebaseConfig = {
-  apiKey: "AIzaSyBUkwisG3LmLfe33ppqIgi60B1Z0nUWso0",
-  authDomain: "thozhilaliadmin-a13d7.firebaseapp.com",
-  databaseURL: "https://thozhilaliadmin-a13d7-default-rtdb.firebaseio.com",
-  projectId: "thozhilaliadmin-a13d7",
-  storageBucket: "thozhilaliadmin-a13d7.firebasestorage.app",
-  messagingSenderId: "282726319265",
-  appId: "1:282726319265:web:d5ea9ad81fe459576a9ce0",
-  measurementId: "G-7JY1RSZSZM"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
-
-    function loadWorkers() {
-        const workerList = document.getElementById("workerList");
-        const areaFilter = document.getElementById("areaFilter").value;
-        const jobFilter = document.getElementById("jobFilter").value;
-        const workersRef = ref(database, "workers");
-
-        onValue(workersRef, (snapshot) => {
-            workerList.innerHTML = "";
-            snapshot.forEach((childSnapshot) => {
-                const worker = childSnapshot.val();
-                if ((areaFilter === "All" || worker.area === areaFilter) &&
-                    (jobFilter === "All" || worker.job === jobFilter)) {
-                    
-                        const workerCard = `<br><div class="card">
-                            <h3>${worker.name}</h3>
-                            <p><strong>Job:</strong> ${worker.job}</p>
-                            <p><strong>Area:</strong> ${worker.area}</p>
-                            <p><strong>Send Location:</strong> 
-                            <button onclick="sendLocation('${worker.name}', '${worker.area}')">Send Location</button></p>
-                            <br>
-                            </div>`;
-                    workerList.innerHTML += workerCard;
-                }
-            });
-        });
-    }
-
-    //Location Tracking 
-   function sendLocation(workerName, workerArea) {
-    // Create and display loading message
-    const loadingDiv = document.createElement('div');
-    loadingDiv.id = 'locationLoadingMessage';
-    loadingDiv.innerHTML = `
-        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-                    background: rgba(0,0,0,0.7); display: flex; justify-content: center; 
-                    align-items: center; z-index: 9999;">
-            <div style="background: white; padding: 20px; border-radius: 8px; text-align: center;">
-                <p>Getting your precise location...</p>
-                <p>Please wait a moment</p>
-            </div>
-        </div>
-    `;
-    document.body.appendChild(loadingDiv);
-
-    if (navigator.geolocation) {
-        // Request high accuracy location with options
-        const options = {
-            enableHighAccuracy: true,
-            timeout: 30000,          // 30 second timeout
-            maximumAge: 0            // Always get fresh location
-        };
-
-        navigator.geolocation.getCurrentPosition(
-            position => {
-                // Remove loading message
-                document.body.removeChild(loadingDiv);
-                
-                // Get more precise coordinates
-                const latitude = position.coords.latitude;
-                const longitude = position.coords.longitude;
-                const accuracy = position.coords.accuracy; // Accuracy in meters
-                
-                // Google Maps location link with zoom level based on accuracy
-                const zoomLevel = accuracy < 50 ? 18 : (accuracy < 500 ? 16 : 14);
-                const locationLink = `https://www.google.com/maps?q=${latitude},${longitude}&z=${zoomLevel}`;
-                
-                // WhatsApp phone number
-                const phoneNumber = "919419339434";
-                
-                // Enhanced WhatsApp message with accuracy information
-                const message = `Hello, I need a worker. Here are the details:\n\n` +
-                              `🔹 Worker: ${workerName}\n` +
-                              `📍 Area: ${workerArea}\n\n` +
-                              `Here is my current location (accurate to ~${Math.round(accuracy)}m):\n${locationLink}`;
-                
-                // WhatsApp link with encoded message
-                const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-                
-                // Redirect to WhatsApp
-                window.location.href = whatsappLink;
-            },
-            error => {
-                // Remove loading message
-                document.body.removeChild(loadingDiv);
-                
-                // Better error handling with specific messages
-                let errorMessage = "Error getting your location. ";
-                
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        errorMessage += "You denied the location permission. Please enable location access and try again.";
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        errorMessage += "Location information is unavailable. Please check your device settings.";
-                        break;
-                    case error.TIMEOUT:
-                        errorMessage += "Location request timed out. Please try again.";
-                        break;
-                    default:
-                        errorMessage += "An unknown error occurred.";
-                }
-                
-                alert(errorMessage);
-            },
-            options
-        );
-    } else {
-        alert("Geolocation is not supported by your browser. Please use a modern browser with location services.");
-    }
-}
-
-    window.sendLocation = sendLocation;
-    window.loadWorkers = loadWorkers;
-</script>
-  <style>
-    label {
-          display: inline-block; /* Ensures proper padding & shape */
-          background: #f1f1f1; /* Light background */
-          padding: 8px 15px; /* Adjust padding for better shape */
-          border-radius: 20px; /* Rounds the edges */
-          font-size: 16px;
-          font-weight: bold; 
-          font-family: serif; 
-          }
-          select {
-          appearance: none; /* Removes default arrow */
-          background: #f1f1f1;
-          padding: 10px 15px;
-          border-radius: 5px; /* Makes the select box rounded */
-          border: 1px solid #ccc;
-          font-size: 16px;
-          cursor: pointer;
-          outline: none;
-          width: 100%;
-          position: relative;
-          font-family: serif;
-          }
-
-    
-
-  </style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Thozhilali | Our Services | Modern Solutions</title>
+    <link rel="stylesheet" href="Tech/styles.css">
 </head>
-
 <body>
-  <div class="hero_area">
-    <!-- header section strats -->
-    <header class="header_section">
-      <div class="header_top">
-        <div class="container-fluid">
-          <div class="contact_nav">
-            <a href="tel:+919419339434">
-              <i class="fa fa-phone" aria-hidden="true"></i>
-              <span>
-                 Call
-              </span>
-            </a>
-            <a href="">
-              <i class="fa fa-envelope" aria-hidden="true"></i>
-              <span>
-                Email
-              </span>
-            </a>
-          </div>
-        </div>
-      </div>
-      <div class="header_bottom">
-        <div class="container-fluid">
-          <nav class="navbar navbar-expand-lg custom_nav-container ">
-            <a class="navbar-brand" href="index.html">
-              <span>
-                Thozhilali
-              </span>
-            </a>
-
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-              <span class=""> </span>
-            </button>
-
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-              <ul class="navbar-nav ">
-                <li class="nav-item ">
-                  <a class="nav-link" href="index.html">Home <span class="sr-only">(current)</span></a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="about.html"> About</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="service.html">Services</a>
-                </li>
-                <li class="nav-item active">
-                  <a class="nav-link" href="contact.html">Contact Us</a>
-                </li>
-              </ul>
+    <!-- Header Section -->
+    <header>
+        <nav class="navbar">
+            <div class="logo">TechThozhilali</div>
+            <div class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
-          </nav>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#">Home</a></li>
+              
+            </ul>
+        </nav>
+        <div class="hero">
+            <h1>Digital Solutions for Modern Businesses</h1>
+            <p>We help you establish a strong online presence with our premium and budget friendly digital services tailored to your unique needs.</p>
         </div>
-      </div>
+        <div class="wave-bg"></div>
     </header>
-    <section class="slider_section ">
-        <div class="container ">
-          <div class="row">
-            <div class="col-md-6 ">
-              <div class="detail-box">
-                <h1>
-                Find a Worker
-                </h1>
-                <!---->
-                <div class="service-filter">
-
-                    
-    <select id="areaFilter" onchange="loadWorkers()">
-        <option value="All">Select Area</option>
-        <option value="Chennai">Chennai</option>
-        <option value="Thiruvallur">Thiruvallur</option>
-        <option value="Avadi">Avadi</option>
-    </select>
-    <br>
-
-    <select id="jobFilter" onchange="loadWorkers()">
-        <option value="All">All Services</option>
-        <option value="Plumber">Plumber</option>
-        <option value="Electrician">Electrician</option>
-        <option value="Carpenter">Carpenter</option>
-        <option value="ApplianceRepair">Appliance Repair</option>
-    </select>
-
-    <div id="workerList" class="worker-container"></div>
-
-                </div>
-        
-                <div id="service-list"></div>
-                
-              </div>
+    
+    <!-- Services Section -->
+    <section class="services" id="services">
+        <div class="section-title">
+            <h2>Our Services</h2>
+        </div>
+        <div class="services-grid">
+            <!-- Website Development -->
+            <div class="service-card">
+                <div class="service-icon">🌐</div>
+                <h3 class="service-title">Website Development</h3>
+                <p class="service-description">
+                    Custom-designed, responsive websites that showcase your brand perfectly. From simple landing pages to complex e-commerce platforms, we've got you covered. We make budget friendly websites.
+                </p>
+                <!-- <a href="#" class="learn-more">Learn More</a> -->
+            </div>
+            <!--Marketing-->
+            <div class="service-card">
+                <div class="service-icon">📢</div>
+                <h3 class="service-title">Online & Traditional Marketing</h3>
+                <p class="service-description">
+                    We design and create high-quality Posters and Flyers, and offer comprehensive distribution services to your targeted locations. Our end-to-end solution handles everything from creative design to strategic placement in the areas that matter most to your business.   
+                </p>
+                <!-- <a href="#" class="learn-more">Learn More</a> -->
             </div>
             
-          </div>
+            <!-- Social Media Handling -->
+            <div class="service-card">
+                <div class="service-icon">📱</div>
+                <h3 class="service-title">Social Media Management</h3>
+                <p class="service-description">
+                    Our Social Media Team will handle content creation, scheduling, and analytics to maximize your online presence.
+                </p>
+               <!-- <a href="#" class="learn-more">Learn More</a> -->
+            </div>
+            
+            <!-- Customer Support -->
+            <div class="service-card">
+                <div class="service-icon">🎧</div>
+                <h3 class="service-title">Customer Support</h3>
+                <p class="service-description">
+                    24/7 customer support solutions to ensure your clients always receive timely and helpful assistance. We handle inquiries through multiple channels.
+                </p>
+                <!-- <a href="#" class="learn-more">Learn More</a> -->
+            </div>
+           
+            <div class="service-card">
+                <div class="service-icon">ᯅ</div>
+                <h3 class="service-title">AR/VR</h3>
+                <p class="service-description">
+                    We also Integrate AR/VR into your business. 
+                </p>
+                <!-- <a href="#" class="learn-more">Learn More</a> -->
+            </div>
         </div>
-      </section>
-      <section class="slider_section ">
-        <div class="container"><div id="service-list"></div></div>
-      </section>
-     
-    </div>
-
-    <footer class="footer_section">
-        <div class="container">
-          <p>
-            &copy; <span id="displayDateYear"></span> All Rights Reserved By
-            <a href="https://html.design/">Thozhilai</a>
-          </p>
-        </div>
-      </footer>
-      <!-- footer section -->
+    </section>
     
-      <script src="js/jquery-3.4.1.min.js"></script>
-      <script src="js/bootstrap.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/owl.carousel.min.js">
-      </script>
-      <script src="js/custom.js"></script>
-      <!-- Google Map -->
-       <!--
-      <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCh39n5U-4IoWpsVGUHWdqB6puEkhRLdmI&callback=myMap"></script>
-      -->
-      <!-- End Google Map -->
-       <!--Script for Service men-->
-       <script>
-        let services = [];
-let citiesAndAreas = {}; // To hold the cities and areas data
-
-// Fetch cities and areas data from the JSON file
-fetch('https://raw.githubusercontent.com/thozhilali/thozhilali/main/citiesAndAreas.json')
-    .then(response => response.json())
-    .then(data => {
-        citiesAndAreas = data; // Store the fetched data in citiesAndAreas
-    })
-    .catch(error => {
-        console.error('Error fetching cities and areas:', error);
-    });
-
-// Fetch services data from the JSON file
-fetch('https://raw.githubusercontent.com/thozhilali/thozhilali/main/services.json')
-    .then(response => response.json())
-    .then(data => {
-        services = data; // Store the fetched data in the services array
-    })
-    .catch(error => {
-        console.error('Error fetching services:', error);
-    });
-
-// Function to update the area dropdown based on the selected city
-function updateAreas() {
-    const city = document.getElementById("city").value;
-    const areaDropdown = document.getElementById("area");
-
-    // Clear existing areas
-    areaDropdown.innerHTML = "<option value=''>Select Area</option>";
-
-    // Get the areas for the selected city
-    if (city && citiesAndAreas[city]) {
-        citiesAndAreas[city].forEach(area => {
-            const option = document.createElement("option");
-            option.value = area;
-            option.textContent = area;
-            areaDropdown.appendChild(option);
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <div class="contact-content">
+            <h2>Ready to Transform Your Digital Presence?</h2>
+            <p>Get in touch with us today to discuss how we can help your business grow online.</p>
+            <a href="https://wa.me/7022053990?text=Need%20to%20enquire%20about%20your%20Digital%20services" class="contact-btn">Contact Us</a>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer>
+        <div class="social-links">
+            <a href="https://www.facebook.com/profile.php?id=61559220115923" class="social-icon">f</a>
+            <a href="https://www.linkedin.com/company/thozhilali/?viewAsMember=true" class="social-icon">in</a>
+            <a href="https://www.instagram.com/thozhilaliofficial/?next=%2F" class="social-icon">ig</a>
+        </div>
+        <p>&copy; 2025 Thozhilali. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        // Mobile menu toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            // Animate hamburger to X
+            const spans = menuToggle.querySelectorAll('span');
+            spans[0].style.transform = spans[0].style.transform === 'rotate(45deg) translate(5px, 5px)' ? '' : 'rotate(45deg) translate(5px, 5px)';
+            spans[1].style.opacity = spans[1].style.opacity === '0' ? '1' : '0';
+            spans[2].style.transform = spans[2].style.transform === 'rotate(-45deg) translate(7px, -6px)' ? '' : 'rotate(-45deg) translate(7px, -6px)';
         });
-    }
-}
-
-// Function to filter and display services based on selected service type, city, and area
-function filterServices() {
-    const serviceType = document.getElementById("service").value;
-    const city = document.getElementById("city").value.trim().toLowerCase();
-    const area = document.getElementById("area").value.trim().toLowerCase();
-
-    const filteredServices = services.filter(service => 
-        service.name.toLowerCase().includes(serviceType) &&
-        service.city.toLowerCase().includes(city) &&
-        service.area.toLowerCase().includes(area)
-    );
-
-    displayServices(filteredServices);
-}
-
-// Function to display the filtered services
-function displayServices(services) {
-    const serviceList = document.getElementById("service-list");
-    serviceList.innerHTML = ""; // Clear previous results
-
-    if (services.length === 0) {
-        serviceList.innerHTML = "<p>No services found in your location.</p>";
-        return;
-    }
-
-    services.forEach(service => {
-        const phoneLink = `<a href="tel:${service.phone}" class="phone-link">Call: ${service.phone}</a>`;
-        const serviceCard = document.createElement("div");
-        serviceCard.classList.add("container");
-        serviceCard.innerHTML = `
-            <br><br>
-            <h3>${service.name}</h3>
-            <p>${service.description}</p>
-            <p>Location: ${service.city}, ${service.area}</p>
-            <p>${phoneLink}</p>
-        `;
-        serviceList.appendChild(serviceCard);
-    });
-}
-       </script>
-       <!--Script for Service men ends here-->
-    
-    
-    </body>
-    
-    </html>
+        
+        // Intersection Observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+        
+        // Observe all service cards for scroll animation
+        document.querySelectorAll('.service-card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>
