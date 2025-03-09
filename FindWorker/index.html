@@ -76,34 +76,86 @@ const database = getDatabase(app);
     }
 
     //Location Tracking 
-    function sendLocation(workerName, workerArea) {
+  function sendLocation(workerName, workerArea) {
+    // Create and display loading message
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = 'locationLoadingMessage';
+    loadingDiv.innerHTML = `
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                    background: rgba(0,0,0,0.7); display: flex; justify-content: center; 
+                    align-items: center; z-index: 9999;">
+            <div style="background: white; padding: 20px; border-radius: 8px; text-align: center;">
+                <p>Getting your precise location...</p>
+                <p>Please wait a moment</p>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(loadingDiv);
+
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(position => {
-            let latitude = position.coords.latitude;
-            let longitude = position.coords.longitude;
+        // Request high accuracy location with options
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 10000,          // 10 second timeout
+            maximumAge: 0            // Always get fresh location
+        };
 
-            // Google Maps location link
-            let locationLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
-
-            // WhatsApp phone number (replace with actual number)
-            let phoneNumber = "917022053990"; // Replace with actual recipient's number
-
-            // WhatsApp message including worker details and sender's location
-            let message = `Hello, I need a worker. Here are the details:\n\n` +
-                          `🔹 Worker: ${workerName}\n` +
-                          `📍 Area: ${workerArea}\n\n` +
-                          `Here is my current location:\n${locationLink}`;
-
-            // WhatsApp link with encoded message
-            let whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-
-            // Redirect to WhatsApp
-            window.location.href = whatsappLink;
-        }, error => {
-            alert("Error getting location. Make sure location services are enabled.");
-        });
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                // Remove loading message
+                document.body.removeChild(loadingDiv);
+                
+                // Get more precise coordinates
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+                const accuracy = position.coords.accuracy; // Accuracy in meters
+                
+                // Google Maps location link with zoom level based on accuracy
+                const zoomLevel = accuracy < 50 ? 18 : (accuracy < 500 ? 16 : 14);
+                const locationLink = `https://www.google.com/maps?q=${latitude},${longitude}&z=${zoomLevel}`;
+                
+                // WhatsApp phone number
+                const phoneNumber = "919419339434";
+                
+                // Enhanced WhatsApp message with accuracy information
+                const message = `Hello, I need a worker. Here are the details:\n\n` +
+                              `🔹 Worker: ${workerName}\n` +
+                              `📍 Area: ${workerArea}\n\n` +
+                              `Here is my current location (accurate to ~${Math.round(accuracy)}m):\n${locationLink}`;
+                
+                // WhatsApp link with encoded message
+                const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+                
+                // Redirect to WhatsApp
+                window.location.href = whatsappLink;
+            },
+            error => {
+                // Remove loading message
+                document.body.removeChild(loadingDiv);
+                
+                // Better error handling with specific messages
+                let errorMessage = "Error getting your location. ";
+                
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage += "You denied the location permission. Please enable location access and try again.";
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage += "Location information is unavailable. Please check your device settings.";
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage += "Location request timed out. Please try again.";
+                        break;
+                    default:
+                        errorMessage += "An unknown error occurred.";
+                }
+                
+                alert(errorMessage);
+            },
+            options
+        );
     } else {
-        alert("Geolocation is not supported by your browser.");
+        alert("Geolocation is not supported by your browser. Please use a modern browser with location services.");
     }
 }
 
