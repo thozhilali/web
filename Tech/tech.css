@@ -114,6 +114,61 @@ a:hover::after {
         grid-column: 1 / -1;
     }
 }
+@media (max-width: 768px) {
+    /* Navigation menu fixes */
+    .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 80%;
+        height: 100vh;
+        background-color: var(--dark-black);
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        transition: all 0.5s ease;
+        z-index: 999;
+        padding: 20px;
+        overflow-y: auto;
+    }
+    
+    .nav-links.active {
+        right: 0;
+    }
+    
+    .nav-links li {
+        margin: 15px 0;
+        width: 100%;
+        text-align: center;
+    }
+    
+    /* Grid column fixes */
+    .col-6, .col-4, .col-8 {
+        grid-column: 1 / -1;
+        width: 100%;
+        padding: 0 15px;
+        margin-bottom: 20px;
+    }
+    
+    /* Container padding fixes */
+    .container {
+        padding: 0 10px;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+    
+    /* Form elements fitting */
+    input, select, textarea {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Fix any overflow issues */
+    body {
+        overflow-x: hidden;
+    }
+}
 
 /* Header and Navigation */
 header {
