@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arthevia Tech Team</title>
+    <style>
+        body {
+            background-color: black;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        .matrix-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.15;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px #00ff00;
+            animation: flicker 3s infinite;
+        }
+        
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .student-card {
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 20px;
+            background-color: rgba(0, 20, 0, 0.3);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .student-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+            background-color: rgba(0, 30, 0, 0.5);
+        }
+        
+        .student-name {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .glitch-effect {
+            position: relative;
+            animation: glitch 3s infinite;
+        }
+        
+        .student-info {
+            margin-top: 15px;
+            border-top: 1px solid #00aa00;
+            padding-top: 15px;
+        }
+        
+        .info-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            width: 100px;
+            color: #00cc00;
+        }
+        
+        .info-value {
+            flex: 1;
+            word-break: break-word;
+        }
+        
+        .info-value a {
+            color: #00ffaa;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .info-value a:hover {
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
+        }
+        
+        .loading {
+            text-align: center;
+            font-size: 1.5rem;
+            margin: 50px 0;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes flicker {
+            0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100% {
+                opacity: 1;
+            }
+            20%, 21.999%, 63%, 63.999%, 65%, 69.999% {
+                opacity: 0.5;
+            }
+        }
+        
+        @keyframes glitch {
+            0% {
+                transform: none;
+                opacity: 1;
+            }
+            7% {
+                transform: skew(-0.5deg, -0.9deg);
+                opacity: 0.75;
+            }
+            10% {
+                transform: none;
+                opacity: 1;
+            }
+            27% {
+                transform: none;
+                opacity: 1;
+            }
+            30% {
+                transform: skew(0.8deg, -0.1deg);
+                opacity: 0.75;
+            }
+            35% {
+                transform: none;
+                opacity: 1;
+            }
+            52% {
+                transform: none;
+                opacity: 1;
+            }
+            55% {
+                transform: skew(-1deg, 0.2deg);
+                opacity: 0.75;
+            }
+            50% {
+                transform: none;
+                opacity: 1;
+            }
+            72% {
+                transform: none;
+                opacity: 1;
+            }
+            75% {
+                transform: skew(0.4deg, 1deg);
+                opacity: 0.75;
+            }
+            80% {
+                transform: none;
+                opacity: 1;
+            }
+            100% {
+                transform: none;
+                opacity: 1;
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="matrixCanvas" class="matrix-background"></canvas>
+    
+    <div class="container">
+        <h1>ARTHEVIA TECH TEAM</h1>
+        
+        <div id="loading" class="loading">INITIALIZING DATA RETRIEVAL...</div>
+        
+        <div id="students-grid" class="students-grid">
+            <!-- Student cards will be dynamically inserted here -->
+        </div>
+    </div>
+    
+    <!-- Import Firebase -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+        
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBUkwisG3LmLfe33ppqIgi60B1Z0nUWso0",
+            authDomain: "thozhilaliadmin-a13d7.firebaseapp.com",
+            databaseURL: "https://thozhilaliadmin-a13d7-default-rtdb.firebaseio.com",
+            projectId: "thozhilaliadmin-a13d7",
+            storageBucket: "thozhilaliadmin-a13d7.firebasestorage.app",
+            messagingSenderId: "282726319265",
+            appId: "1:282726319265:web:d5ea9ad81fe459576a9ce0",
+            measurementId: "G-7JY1RSZSZM"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        
+        // Reference to the students data
+        const studentsRef = ref(database, 'arthevia/students');
+        
+        // Get students data
+        onValue(studentsRef, (snapshot) => {
+            const data = snapshot.val();
+            displayStudents(data);
+            document.getElementById('loading').style.display = 'none';
+        }, (error) => {
+            console.error("Error retrieving data:", error);
+            document.getElementById('loading').textContent = "ERROR RETRIEVING DATA: " + error.message;
+        });
+        
+        // Display students in the grid
+        function displayStudents(data) {
+            const studentsGrid = document.getElementById('students-grid');
+            
+            // Clear existing content
+            studentsGrid.innerHTML = '';
+            
+            if (!data) {
+                studentsGrid.innerHTML = '<div class="loading">NO STUDENT DATA FOUND</div>';
+                return;
+            }
+            
+            // Convert object to array and sort by name
+            const studentsArray = Object.entries(data).map(([id, student]) => ({
+                id,
+                ...student
+            })).sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Create card for each student
+            studentsArray.forEach(student => {
+                const card = document.createElement('div');
+                card.className = 'student-card';
+                
+                card.innerHTML = `
+                    <div class="student-name glitch-effect">${student.name}</div>
+                    <div class="student-info">
+                        <div class="info-row">
+                            <div class="info-label">Domain:</div>
+                            <div class="info-value">${student.domain || 'N/A'}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Department:</div>
+                            <div class="info-value">_**${student.department || 'N/A'}**_</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Email:</div>
+                            <div class="info-value">${student.email || 'N/A'}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">LinkedIn:</div>
+                            <div class="info-value">
+                                ${student.linkedinId ? `<a href="${student.linkedinId}" target="_blank">Profile</a>` : 'N/A'}
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Project:</div>
+                            <div class="info-value">
+                                ${student.projectLink ? `<a href="${student.projectLink}" target="_blank">View Project</a>` : 'N/A'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                studentsGrid.appendChild(card);
+            });
+        }
+        
+        // Initialize Matrix animation
+        const canvas = document.getElementById('matrixCanvas');
+        const ctx = canvas.getContext('2d');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Adjust canvas size on window resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Characters to display
+        const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+        const charSize = 14;
+
+        // Create drops
+        const drops = [];
+        const columns = Math.floor(canvas.width / charSize);
+        
+        for (let i = 0; i < columns; i++) {
+            drops[i] = Math.floor(Math.random() * canvas.height / charSize);
+        }
+
+        // Draw the matrix
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.fillStyle = '#0f0';
+            ctx.font = `${charSize}px monospace`;
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars.charAt(Math.floor(Math.random() * chars.length));
+                ctx.fillText(text, i * charSize, drops[i] * charSize);
+                
+                if (drops[i] * charSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                
+                drops[i]++;
+            }
+        }
+
+        // Animate the matrix
+        setInterval(drawMatrix, 70);
+    </script>
+</body>
+</html>
