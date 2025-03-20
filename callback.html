@@ -1,1 +1,26 @@
-
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.auth0.com/js/auth0/9.19/auth0.min.js"></script>
+  <script>
+    window.onload = function() {
+      var auth0 = new auth0.WebAuth({
+        domain: 'dev-x4vh5dn1puh03czq.us.auth0.com',
+        clientID: '6czlw25A9kwR2vTCSI1G3IFStxnqHyJ0'
+      });
+      
+      auth0.parseHash(function(err, result) {
+        if (result) {
+          // Save the token
+          localStorage.setItem('auth_token', result.accessToken);
+          // Go back to main page
+          window.location.href = '/';
+        }
+      });
+    }
+  </script>
+</head>
+<body>
+  <p>Logging you in...</p>
+</body>
+</html>
