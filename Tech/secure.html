@@ -8,6 +8,42 @@
   <body>
       <h1 class="title">Hello World! </h1>
       <p id="currentTime"></p>
-      <script src="script.js"></script>
+      <script>
+        <script>
+  // Set up Auth0
+  var auth0 = new auth0.WebAuth({
+    domain: 'YOUR-DOMAIN.auth0.com',
+    clientID: 'YOUR-CLIENT-ID',
+    redirectUri: window.location.origin + '/callback.html',
+    responseType: 'token id_token',
+    scope: 'openid profile'
+  });
+  
+  // Login button
+  function login() {
+    auth0.authorize();
+  }
+  
+  // Logout button
+  function logout() {
+    localStorage.removeItem('auth_token');
+    window.location.href = '/';
+  }
+  
+  // Check if logged in
+  function checkIfLoggedIn() {
+    var token = localStorage.getItem('auth_token');
+    if (token) {
+      // User is logged in!
+      document.getElementById('login-section').style.display = 'none';
+      document.getElementById('content-section').style.display = 'block';
+    } else {
+      // User is not logged in
+      document.getElementById('login-section').style.display = 'block';
+      document.getElementById('content-section').style.display = 'none';
+    }
+  }
+</script>
+      </script>
   </body>
 </html>
