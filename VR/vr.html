@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cardboard VR Space Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            overflow: hidden;
+            background-color: #000;
+            touch-action: none;
+        }
+        
+        #container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+        }
+        
+        .eye-view {
+            width: 50%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .eye-view:first-child {
+            border-right: 2px solid black;
+        }
+        
+        .scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            perspective: 1000px;
+            transform-style: preserve-3d;
+        }
+        
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background-color: white;
+            border-radius: 50%;
+        }
+        
+        .asteroid {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: #777;
+            border-radius: 50%;
+            transform: translateZ(0);
+        }
+        
+        .target {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 40px;
+            height: 40px;
+            margin-left: -20px;
+            margin-top: -20px;
+            border: 2px solid white;
+            border-radius: 50%;
+            transform: translateZ(0);
+            pointer-events: none;
+        }
+        
+        .target::before, .target::after {
+            content: '';
+            position: absolute;
+            background-color: white;
+        }
+        
+        .target::before {
+            left: 50%;
+            top: 25%;
+            width: 2px;
+            height: 50%;
+            margin-left: -1px;
+        }
+        
+        .target::after {
+            left: 25%;
+            top: 50%;
+            width: 50%;
+            height: 2px;
+            margin-top: -1px;
+        }
+        
+        .score {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: white;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            z-index: 10;
+        }
+        
+        .instructions {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-family: Arial, sans-serif;
+            z-index: 100;
+        }
+        
+        #startButton {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px 30px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="instructions">Place your phone in a VR cardboard viewer and aim at asteroids by moving your head. Tap screen to shoot.</div>
+    <button id="startButton">Start VR Experience</button>
+    
+    <div id="container">
+        <div class="eye-view" id="left-eye">
+            <div class="scene" id="scene-left"></div>
+            <div class="target"></div>
+            <div class="score">Score: <span id="score-left">0</span></div>
+        </div>
+        <div class="eye-view" id="right-eye">
+            <div class="scene" id="scene-right"></div>
+            <div class="target"></div>
+            <div class="score">Score: <span id="score-right">0</span></div>
+        </div>
+    </div>
+
+    <script>
+        const startButton = document.getElementById('startButton');
+        const instructions = document.querySelector('.instructions');
+        const leftScene = document.getElementById('scene-left');
+        const rightScene = document.getElementById('scene-right');
+        const scoreLeft = document.getElementById('score-left');
+        const scoreRight = document.getElementById('score-right');
+        
+        let score = 0;
+        let gameStarted = false;
+        let alpha = 0; // rotation around z-axis
+        let beta = 0;  // rotation around x-axis
+        let gamma = 0; // rotation around y-axis
+        let asteroids = [];
+        let lastShootTime = 0;
+        const shootCooldown = 500; // 500ms cooldown between shots
+        
+        // Create stars for both eye views
+        function createStars() {
+            const starCount = 200;
+            for (let i = 0; i < starCount; i++) {
+                createStar(leftScene);
+                createStar(rightScene);
+            }
+        }
+        
+        function createStar(scene) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            scene.appendChild(star);
+        }
+        
+        // Create an asteroid
+        function createAsteroid() {
+            // Create for left eye
+            const asteroidLeft = document.createElement('div');
+            asteroidLeft.className = 'asteroid';
+            asteroidLeft.style.left = `${Math.random() * 80 + 10}%`;
+            asteroidLeft.style.top = `${Math.random() * 80 + 10}%`;
+            asteroidLeft.style.transform = `translateZ(${-Math.random() * 500 - 200}px)`;
+            leftScene.appendChild(asteroidLeft);
+            
+            // Create for right eye (same position)
+            const asteroidRight = document.createElement('div');
+            asteroidRight.className = 'asteroid';
+            asteroidRight.style.left = asteroidLeft.style.left;
+            asteroidRight.style.top = asteroidLeft.style.top;
+            asteroidRight.style.transform = asteroidLeft.style.transform;
+            rightScene.appendChild(asteroidRight);
+            
+            // Store reference to both elements
+            asteroids.push({
+                left: asteroidLeft,
+                right: asteroidRight,
+                zPosition: parseInt(asteroidLeft.style.transform.match(/translateZ\((.+)px\)/)[1], 10),
+                active: true
+            });
+        }
+        
+        // Handle device orientation
+        function handleOrientation(event) {
+            if (!gameStarted) return;
+            
+            alpha = event.alpha; // z-axis rotation [0,360)
+            beta = event.beta;   // x-axis rotation [-180,180]
+            gamma = event.gamma; // y-axis rotation [-90,90]
+            
+            // Apply rotation to the scenes
+            leftScene.style.transform = `rotateX(${-beta}deg) rotateY(${gamma}deg)`;
+            rightScene.style.transform = `rotateX(${-beta}deg) rotateY(${gamma}deg)`;
+        }
+        
+        // Handle shoot
+        function handleShoot() {
+            if (!gameStarted) return;
+            
+            const now = Date.now();
+            if (now - lastShootTime < shootCooldown) return;
+            
+            lastShootTime = now;
+            
+            // Check if any asteroid is hit
+            let hit = false;
+            
+            asteroids.forEach(asteroid => {
+                if (!asteroid.active) return;
+                
+                // Get asteroid position
+                const rect = asteroid.left.getBoundingClientRect();
+                const asteroidX = rect.left + rect.width / 2;
+                const asteroidY = rect.top + rect.height / 2;
+                
+                // Get center of screen
+                const centerX = window.innerWidth / 4; // Center of left eye (quarter of full screen)
+                const centerY = window.innerHeight / 2;
+                
+                // Check if asteroid is near the center (in the target)
+                const distance = Math.sqrt(
+                    Math.pow(asteroidX - centerX, 2) + Math.pow(asteroidY - centerY, 2)
+                );
+                
+                if (distance < 40) { // Target radius is 20px
+                    // Hit!
+                    asteroid.active = false;
+                    asteroid.left.style.backgroundColor = '#f00'; // Turn red
+                    asteroid.right.style.backgroundColor = '#f00';
+                    
+                    // Increase score
+                    score += Math.floor(Math.abs(asteroid.zPosition) / 100); // More points for further asteroids
+                    scoreLeft.textContent = score;
+                    scoreRight.textContent = score;
+                    
+                    hit = true;
+                    
+                    // Remove after animation
+                    setTimeout(() => {
+                        asteroid.left.remove();
+                        asteroid.right.remove();
+                    }, 500);
+                }
+            });
+            
+            // Filter out inactive asteroids
+            asteroids = asteroids.filter(a => a.active);
+        }
+        
+        // Game loop
+        function gameLoop() {
+            if (!gameStarted) return;
+            
+            // Move asteroids closer
+            asteroids.forEach(asteroid => {
+                if (!asteroid.active) return;
+                
+                asteroid.zPosition += 5;
+                
+                // Update transform
+                const transform = `translateZ(${asteroid.zPosition}px)`;
+                asteroid.left.style.transform = transform;
+                asteroid.right.style.transform = transform;
+                
+                // If asteroid is too close, remove it
+                if (asteroid.zPosition > 0) {
+                    asteroid.active = false;
+                    asteroid.left.remove();
+                    asteroid.right.remove();
+                }
+            });
+            
+            // Filter out inactive asteroids
+            asteroids = asteroids.filter(a => a.active);
+            
+            // Create new asteroid occasionally
+            if (Math.random() < 0.03 && asteroids.length < 10) {
+                createAsteroid();
+            }
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Start game
+        startButton.addEventListener('click', () => {
+            startButton.style.display = 'none';
+            
+            // Request fullscreen
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen();
+            } else if (document.documentElement.webkitRequestFullscreen) {
+                document.documentElement.webkitRequestFullscreen();
+            }
+            
+            // Lock to landscape orientation
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(err => console.error(err));
+            }
+            
+            // Hide instructions after a delay
+            setTimeout(() => {
+                instructions.style.display = 'none';
+            }, 3000);
+            
+            // Initialize game
+            createStars();
+            gameStarted = true;
+            
+            // Start game loop
+            gameLoop();
+            
+            // Create initial asteroids
+            for (let i = 0; i < 5; i++) {
+                createAsteroid();
+            }
+        });
+        
+        // Set up event listeners
+        window.addEventListener('deviceorientation', handleOrientation);
+        window.addEventListener('touchstart', handleShoot);
+        window.addEventListener('click', handleShoot);
+    </script>
+</body>
+</html>
