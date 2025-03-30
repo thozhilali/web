@@ -38,7 +38,6 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            perspective: 1000px;
             transform-style: preserve-3d;
         }
         
@@ -67,16 +66,17 @@
             height: 40px;
             margin-left: -20px;
             margin-top: -20px;
-            border: 2px solid white;
+            border: 2px solid rgba(255, 255, 255, 0.7);
             border-radius: 50%;
             transform: translateZ(0);
             pointer-events: none;
+            z-index: 5;
         }
         
         .target::before, .target::after {
             content: '';
             position: absolute;
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.7);
         }
         
         .target::before {
@@ -101,8 +101,9 @@
             left: 10px;
             color: white;
             font-family: Arial, sans-serif;
-            font-size: 14px;
+            font-size: 16px;
             z-index: 10;
+            text-shadow: 1px 1px 2px black;
         }
         
         .instructions {
@@ -132,11 +133,42 @@
             cursor: pointer;
             z-index: 100;
         }
+        
+        #calibrateButton {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 100;
+            display: none;
+        }
+        
+        .flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 90;
+            transition: opacity 0.1s;
+        }
     </style>
 </head>
 <body>
-    <div class="instructions">Place your phone in a VR cardboard viewer and aim at asteroids by moving your head. Tap screen to shoot.</div>
+    <div class="instructions">Place your phone in a VR cardboard viewer and aim at asteroids by moving your head. Tap screen to shoot. Tap with two fingers to recalibrate.</div>
     <button id="startButton">Start VR Experience</button>
+    <button id="calibrateButton">Recalibrate</button>
+    <div class="flash" id="flash"></div>
     
     <div id="container">
         <div class="eye-view" id="left-eye">
@@ -153,17 +185,24 @@
 
     <script>
         const startButton = document.getElementById('startButton');
+        const calibrateButton = document.getElementById('calibrateButton');
         const instructions = document.querySelector('.instructions');
         const leftScene = document.getElementById('scene-left');
         const rightScene = document.getElementById('scene-right');
         const scoreLeft = document.getElementById('score-left');
         const scoreRight = document.getElementById('score-right');
+        const flash = document.getElementById('flash');
         
         let score = 0;
         let gameStarted = false;
+        let gyroAvailable = false;
         let alpha = 0; // rotation around z-axis
         let beta = 0;  // rotation around x-axis
         let gamma = 0; // rotation around y-axis
+        let initialBeta = 0;
+        let initialGamma = 0;
+        let lastBeta = 0;
+        let lastGamma = 0;
         let asteroids = [];
         let lastShootTime = 0;
         const shootCooldown = 500; // 500ms cooldown between shots
@@ -182,22 +221,33 @@
             star.className = 'star';
             star.style.left = `${Math.random() * 100}%`;
             star.style.top = `${Math.random() * 100}%`;
+            const size = Math.random() * 2 + 1;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            star.style.opacity = Math.random() * 0.7 + 0.3;
             scene.appendChild(star);
         }
         
         // Create an asteroid
         function createAsteroid() {
+            // Random size for variety
+            const size = Math.random() * 15 + 15;
+            
             // Create for left eye
             const asteroidLeft = document.createElement('div');
             asteroidLeft.className = 'asteroid';
+            asteroidLeft.style.width = `${size}px`;
+            asteroidLeft.style.height = `${size}px`;
             asteroidLeft.style.left = `${Math.random() * 80 + 10}%`;
             asteroidLeft.style.top = `${Math.random() * 80 + 10}%`;
-            asteroidLeft.style.transform = `translateZ(${-Math.random() * 500 - 200}px)`;
+            asteroidLeft.style.transform = `translateZ(${-Math.random() * 500 - 300}px)`;
             leftScene.appendChild(asteroidLeft);
             
             // Create for right eye (same position)
             const asteroidRight = document.createElement('div');
             asteroidRight.className = 'asteroid';
+            asteroidRight.style.width = `${size}px`;
+            asteroidRight.style.height = `${size}px`;
             asteroidRight.style.left = asteroidLeft.style.left;
             asteroidRight.style.top = asteroidLeft.style.top;
             asteroidRight.style.transform = asteroidLeft.style.transform;
@@ -212,27 +262,88 @@
             });
         }
         
-        // Handle device orientation
+        // Calibrate device orientation
+        function calibrate() {
+            initialBeta = beta || 0;
+            initialGamma = gamma || 0;
+            lastBeta = initialBeta;
+            lastGamma = initialGamma;
+            
+            // Show flash effect
+            flash.style.opacity = 0.5;
+            setTimeout(() => {
+                flash.style.opacity = 0;
+            }, 100);
+        }
+        
+        // Handle device orientation with smoother transitions
         function handleOrientation(event) {
             if (!gameStarted) return;
             
-            alpha = event.alpha; // z-axis rotation [0,360)
-            beta = event.beta;   // x-axis rotation [-180,180]
-            gamma = event.gamma; // y-axis rotation [-90,90]
+            gyroAvailable = true;
             
-            // Apply rotation to the scenes
-            leftScene.style.transform = `rotateX(${-beta}deg) rotateY(${gamma}deg)`;
-            rightScene.style.transform = `rotateX(${-beta}deg) rotateY(${gamma}deg)`;
+            // Get raw sensor data
+            alpha = event.alpha || 0; // z-axis rotation [0,360)
+            let rawBeta = event.beta || 0;   // x-axis rotation [-180,180]
+            let rawGamma = event.gamma || 0; // y-axis rotation [-90,90]
+            
+            // Apply smoothing by averaging with previous values (reduces jitter)
+            beta = 0.8 * lastBeta + 0.2 * rawBeta;
+            gamma = 0.8 * lastGamma + 0.2 * rawGamma;
+            lastBeta = beta;
+            lastGamma = gamma;
+            
+            // Calculate relative movement from calibration point
+            let relativeBeta = beta - initialBeta;
+            let relativeGamma = gamma - initialGamma;
+            
+            // Clamp movement to reasonable range
+            relativeBeta = Math.max(-40, Math.min(40, relativeBeta));
+            relativeGamma = Math.max(-40, Math.min(40, relativeGamma));
+            
+            // Apply rotation to the scenes with limited range
+            leftScene.style.transform = `rotateX(${-relativeBeta}deg) rotateY(${relativeGamma}deg)`;
+            rightScene.style.transform = `rotateX(${-relativeBeta}deg) rotateY(${relativeGamma}deg)`;
+        }
+        
+        // Visual feedback for shooting
+        function showShootEffect() {
+            flash.style.opacity = 0.3;
+            setTimeout(() => {
+                flash.style.opacity = 0;
+            }, 50);
         }
         
         // Handle shoot
-        function handleShoot() {
+        function handleShoot(e) {
             if (!gameStarted) return;
+            
+            // Prevent default to avoid accidental zooming or scrolling
+            e.preventDefault();
             
             const now = Date.now();
             if (now - lastShootTime < shootCooldown) return;
             
             lastShootTime = now;
+            showShootEffect();
+            
+            // Play sound effect
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.2);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.2);
             
             // Check if any asteroid is hit
             let hit = false;
@@ -267,6 +378,24 @@
                     
                     hit = true;
                     
+                    // Play hit sound
+                    const hitAudio = new (window.AudioContext || window.webkitAudioContext)();
+                    const hitOsc = hitAudio.createOscillator();
+                    const hitGain = hitAudio.createGain();
+                    
+                    hitOsc.type = 'square';
+                    hitOsc.frequency.setValueAtTime(440, hitAudio.currentTime);
+                    hitOsc.frequency.exponentialRampToValueAtTime(880, hitAudio.currentTime + 0.1);
+                    
+                    hitGain.gain.setValueAtTime(0.3, hitAudio.currentTime);
+                    hitGain.gain.exponentialRampToValueAtTime(0.01, hitAudio.currentTime + 0.3);
+                    
+                    hitOsc.connect(hitGain);
+                    hitGain.connect(hitAudio.destination);
+                    
+                    hitOsc.start();
+                    hitOsc.stop(hitAudio.currentTime + 0.3);
+                    
                     // Remove after animation
                     setTimeout(() => {
                         asteroid.left.remove();
@@ -277,6 +406,15 @@
             
             // Filter out inactive asteroids
             asteroids = asteroids.filter(a => a.active);
+        }
+        
+        // Handle multi-touch for calibration
+        function handleTouchStart(e) {
+            if (e.touches.length >= 2) {
+                calibrate();
+            } else {
+                handleShoot(e);
+            }
         }
         
         // Game loop
@@ -316,6 +454,7 @@
         // Start game
         startButton.addEventListener('click', () => {
             startButton.style.display = 'none';
+            calibrateButton.style.display = 'block';
             
             // Request fullscreen
             if (document.documentElement.requestFullscreen) {
@@ -332,11 +471,14 @@
             // Hide instructions after a delay
             setTimeout(() => {
                 instructions.style.display = 'none';
-            }, 3000);
+            }, 5000);
             
             // Initialize game
             createStars();
             gameStarted = true;
+            
+            // Initial calibration
+            setTimeout(calibrate, 500);
             
             // Start game loop
             gameLoop();
@@ -345,11 +487,21 @@
             for (let i = 0; i < 5; i++) {
                 createAsteroid();
             }
+            
+            // Check if device orientation is supported
+            setTimeout(() => {
+                if (!gyroAvailable) {
+                    alert("Device orientation sensors not detected. This game requires motion sensors to work properly.");
+                }
+            }, 2000);
         });
+        
+        // Set up calibration button
+        calibrateButton.addEventListener('click', calibrate);
         
         // Set up event listeners
         window.addEventListener('deviceorientation', handleOrientation);
-        window.addEventListener('touchstart', handleShoot);
+        window.addEventListener('touchstart', handleTouchStart);
         window.addEventListener('click', handleShoot);
     </script>
 </body>
