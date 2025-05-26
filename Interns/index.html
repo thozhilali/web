@@ -66,7 +66,7 @@
         let interns = {}; // Use let instead of const
 
         // Fetch intern data
-        fetch('web/Interns/interns.json')
+        fetch('https://raw.githubusercontent.com/thozhilali/web/Interns/interns.json')
             .then(response => {
                 if (!response.ok) {
                     throw new Error("Failed to load interns data");
